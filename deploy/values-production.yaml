@@ -25,15 +25,14 @@ externalSecrets:
 analytics:
   enabled: true
 
-caddy:
+# Reuse the cluster edge; no additional Hetzner load balancer is required.
+ingress:
   enabled: true
   host: faro.fyi
-  storageClass: hcloud-volumes
-  serviceAnnotations:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
     external-dns.alpha.kubernetes.io/hostname: faro.fyi
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
-    load-balancer.hetzner.cloud/location: fsn1
-    load-balancer.hetzner.cloud/uses-proxyprotocol: "false"
 
 postgres:
   enabled: true

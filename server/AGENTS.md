@@ -50,8 +50,9 @@ on failure. Liveness must remain independent of PostgreSQL.
 runtime system libraries, running as an unprivileged user. Its Once checksums
 must stay aligned with the root toolchain pin when updating Once.
 
-`../deploy/helm/faro` defines the service at `https://faro.fyi`, using Caddy for
-HTTPS, CloudNativePG for PostgreSQL, and the Barman plugin for daily backups and
+`../deploy/helm/faro` defines the service at `https://faro.fyi`, using the shared
+NGINX ingress and Certificate Manager for HTTPS, CloudNativePG for PostgreSQL,
+and the Barman plugin for daily backups and
 continuous log archiving. Production targets the Pepicrft workload cluster. Live
 Flux registrations are authoritative in `pepicrft/indie`, not duplicated here.
 See `../deploy/README.md` for secrets, bootstrap prerequisites, and diagnostics.

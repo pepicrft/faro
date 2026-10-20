@@ -105,7 +105,8 @@ on successful main-branch server checks. The Helm chart in `deploy/helm/faro`
 targets the Pepicrft workload cluster managed by `../indie`. Production values use
 its existing node pool and External Secrets store.
 
-The public endpoint is `https://faro.fyi`, with automatic HTTPS through Caddy.
+The public endpoint is `https://faro.fyi`, with automatic HTTPS through the
+cluster's shared ingress and Certificate Manager.
 CloudNativePG provisions a dedicated PostgreSQL instance; the Barman plugin
 archives logs and takes daily backups to Hetzner object storage with 30-day
 retention. Flux registrations in `pepicrft/indie` track this repository's chart

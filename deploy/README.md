@@ -16,14 +16,18 @@ Keep the immutable live aliases `org-salibu`, `salibu-production`, and
 
 ## Public endpoint
 
-A dedicated Hetzner load balancer exposes ports 80 and 443. External DNS creates
-`faro.fyi` records in Cloudflare, with proxying disabled. The platform's domain
-allowlist must include `faro.fyi`. Cloudflare must be authoritative at the registrar.
+Faro reuses the cluster's shared NGINX ingress and its existing Hetzner load
+balancer. A dedicated load balancer was rejected by the project's quota, so
+production must not enable the optional standalone Caddy edge. External DNS
+creates `faro.fyi` records in Cloudflare, with proxying disabled. The platform's
+domain allowlist must include `faro.fyi`, and Cloudflare must be authoritative
+at the registrar.
 
-An unprivileged Caddy container terminates HTTPS, obtains and renews certificates
-using Let's Encrypt, redirects HTTP, and proxies to Phoenix's internal ClusterIP
-service. Its certificate state is persisted on a 2 GiB volume. Phoenix itself is
-not publicly exposed. The root and `/api/v1/status` return service metadata;
+Certificate Manager uses the existing `letsencrypt-cloudflare` issuer to obtain
+and renew the HTTPS certificate through DNS validation. The ingress terminates
+HTTPS, redirects HTTP, and proxies to Phoenix's internal ClusterIP service.
+No separate proxy volume or load balancer is required. Phoenix itself is not
+publicly exposed. The root and `/api/v1/status` return service metadata;
 `/health/live` checks the application and `/health/ready` also queries PostgreSQL.
 There is no agent runtime, account system, or personal-content API yet.
 

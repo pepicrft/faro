@@ -52,6 +52,13 @@ analytics:
 networkPolicy:
   enabled: true
 
+ingress:
+  enabled: false
+  className: nginx
+  host: faro.fyi
+  tlsSecretName: faro-fyi-tls
+  annotations: {}
+
 caddy:
   enabled: false
   host: faro.fyi
