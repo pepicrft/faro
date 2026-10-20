@@ -7,6 +7,7 @@ spec:
   podSelector:
     matchLabels:
       {{- include "faro.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: web
   policyTypes: [Ingress, Egress]
   ingress:
     - from:
@@ -20,6 +21,15 @@ spec:
           protocol: UDP
         - port: 53
           protocol: TCP
+    {{- if .Values.postgres.enabled }}
+    - to:
+        - podSelector:
+            matchLabels:
+              cnpg.io/cluster: {{ .Values.postgres.clusterName }}
+      ports:
+        - port: 5432
+          protocol: TCP
+    {{- end }}
     {{- if .Values.analytics.enabled }}
     - to:
         - namespaceSelector:

@@ -1,9 +1,10 @@
 # Faro server
 
 This is an independent Once workspace with a Phoenix/Bandit JSON service. It is
-not an implemented agent backend. It has no accounts, database, model providers,
-background jobs, or native-client integration yet. Keep public routes limited to
-health and scaffold status until authentication and authorization are designed.
+not an implemented agent backend. Production has a dedicated PostgreSQL database,
+but no application tables, accounts, model providers, background jobs, or native-client
+integration yet. Keep public routes limited to health and service metadata until
+authentication and authorization are designed.
 
 ## Development
 
@@ -33,11 +34,15 @@ Every ExUnit module must use `async: true`. Never change application environment
 or other global state in a test. Test through explicit dependencies and the real
 endpoint. Treat liveness and readiness separately when adding external services.
 
-Production reads `FARO_SECRET_KEY_BASE` at runtime and requires at least 64 bytes.
-Never copy development/test keys into production, images, chart values, or tests
-of production deployment. Do not log credentials or future agent message content.
-Keep migrations, persistence, auth, provider integration, and event protocols out
-of the welcome/status scaffold until they are actually implemented.
+Production requires `FARO_SECRET_KEY_BASE` (at least 64 bytes), `FARO_DATABASE_URL`,
+and `FARO_DATABASE_CA_FILE`. Database TLS verifies peers and hostnames. Local
+PostgreSQL is optional via `FARO_DATABASE_ENABLED=true`; do not disable production
+TLS verification. Never log credentials or commit production secrets.
+
+Use `Faro.Schema` for new schemas so primary and foreign keys are UUIDs. Add
+migrations under `priv/repo/migrations/`; a release init container applies them
+before Phoenix starts. Readiness checks PostgreSQL when enabled and returns 503
+on failure. Liveness must remain independent of PostgreSQL.
 
 ## Delivery
 
@@ -45,10 +50,11 @@ of the welcome/status scaffold until they are actually implemented.
 runtime system libraries, running as an unprivileged user. Its Once checksums
 must stay aligned with the root toolchain pin when updating Once.
 
-`../deploy/helm/faro` defines an internal-only service. Production values target
-the Pepicrft workload cluster managed in the sibling `../../indie` repository. `../deploy/indie` is a staged
-handoff, not an active cluster registration. Do not apply it or unsuspend the
-HelmRelease without an explicit deployment request and prerequisite provisioning.
-No database, public domain, TLS termination, or analytics events are configured.
+`../deploy/helm/faro` defines the service at `https://faro.fyi`, using Caddy for
+HTTPS, CloudNativePG for PostgreSQL, and the Barman plugin for daily backups and
+continuous log archiving. Production targets the Pepicrft workload cluster. Live
+Flux registrations are authoritative in `pepicrft/indie`, not duplicated here.
+See `../deploy/README.md` for secrets, bootstrap prerequisites, and diagnostics.
+No analytics events are emitted yet.
 Only add safe named analytics events after meaningful product outcomes exist;
 never include personal-agent content or credentials.

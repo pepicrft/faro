@@ -1,0 +1,52 @@
+{{- if and .Values.postgres.enabled .Values.postgres.backup.enabled }}
+apiVersion: objectstorage.pepicrft.me/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: {{ .Values.postgres.backup.objectStoreName }}
+spec:
+  bucketName: {{ required "postgres.backup.bucketName must be configured" .Values.postgres.backup.bucketName }}
+  secretName: {{ .Values.postgres.backup.secretName }}
+  reclaimPolicy: Retain
+---
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: {{ .Values.postgres.backup.objectStoreName }}
+spec:
+  configuration:
+    destinationPath: {{ printf "s3://%s/" .Values.postgres.backup.bucketName | quote }}
+    endpointURL: {{ .Values.postgres.backup.endpointURL | quote }}
+    s3Credentials:
+      accessKeyId:
+        name: {{ .Values.postgres.backup.secretName }}
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: {{ .Values.postgres.backup.secretName }}
+        key: AWS_SECRET_ACCESS_KEY
+    wal:
+      compression: gzip
+    data:
+      compression: gzip
+  retentionPolicy: {{ .Values.postgres.backup.retentionPolicy | quote }}
+  instanceSidecarConfiguration:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+      limits:
+        memory: 256Mi
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: {{ .Values.postgres.clusterName }}-daily
+spec:
+  schedule: {{ .Values.postgres.backup.schedule | quote }}
+  immediate: true
+  backupOwnerReference: self
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  cluster:
+    name: {{ .Values.postgres.clusterName }}
+{{- end }}

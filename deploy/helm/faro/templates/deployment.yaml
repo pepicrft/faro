@@ -15,12 +15,14 @@ spec:
   selector:
     matchLabels:
       {{- include "faro.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: web
   template:
     metadata:
       annotations:
         checksum/config: {{ toJson .Values.env | sha256sum }}
       labels:
         {{- include "faro.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: web
     spec:
       automountServiceAccountToken: false
       enableServiceLinks: false
@@ -36,6 +38,40 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.postgres.enabled }}
+      initContainers:
+        - name: migrate
+          image: {{ include "faro.image" . | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: [/app/bin/faro, eval, "Faro.Release.migrate()"]
+          env:
+            - name: FARO_DATABASE_CA_FILE
+              value: /database-ca/ca.crt
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.appSecretName }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: database-ca
+              mountPath: /database-ca
+              readOnly: true
+      {{- end }}
       containers:
         - name: web
           image: {{ include "faro.image" . | quote }}
@@ -44,6 +80,10 @@ spec:
             - name: http
               containerPort: 4000
           env:
+            {{- if .Values.postgres.enabled }}
+            - name: FARO_DATABASE_CA_FILE
+              value: /database-ca/ca.crt
+            {{- end }}
             {{- range $key, $value := .Values.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
@@ -81,10 +121,23 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            {{- if .Values.postgres.enabled }}
+            - name: database-ca
+              mountPath: /database-ca
+              readOnly: true
+            {{- end }}
       volumes:
         - name: tmp
           emptyDir:
             sizeLimit: 64Mi
+        {{- if .Values.postgres.enabled }}
+        - name: database-ca
+          secret:
+            secretName: {{ .Values.postgres.clusterName }}-ca
+            items:
+              - key: ca.crt
+                path: ca.crt
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

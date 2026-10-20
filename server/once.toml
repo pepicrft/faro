@@ -49,6 +49,7 @@ deps = ["./mix_dependencies_dev"]
 [target.attrs]
 app_name = "faro"
 mix_env = "dev"
+priv = ["priv/**/*"]
 compile_args = ["--warnings-as-errors"]
 
 [[target]]
@@ -59,6 +60,7 @@ deps = ["./mix_dependencies_test"]
 [target.attrs]
 app_name = "faro"
 mix_env = "test"
+priv = ["priv/**/*"]
 compile_args = ["--warnings-as-errors"]
 
 [[target]]
@@ -69,6 +71,7 @@ deps = ["./mix_dependencies_prod"]
 [target.attrs]
 app_name = "faro"
 mix_env = "prod"
+priv = ["priv/**/*"]
 compile_args = ["--warnings-as-errors"]
 
 [[target]]
@@ -98,3 +101,4 @@ srcs = ["mix.exs"]
 deps = ["./mix_application_prod"]
 [target.attrs]
 release_name = "faro"
+data = ["priv/**/*"]

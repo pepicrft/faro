@@ -24,7 +24,9 @@ defmodule Faro.MixProject do
     [
       {:phoenix, "~> 1.8.0"},
       {:bandit, "~> 1.0"},
-      {:jason, "~> 1.4"}
+      {:jason, "~> 1.4"},
+      {:ecto_sql, "~> 3.13"},
+      {:postgrex, "~> 0.22"}
     ]
   end
 end

@@ -1,0 +1,141 @@
+{{- if .Values.caddy.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "faro.fullname" . }}-caddy
+data:
+  Caddyfile: |
+    {
+      admin off
+      email {{ .Values.caddy.email }}
+      http_port 8080
+      https_port 8443
+    }
+    http://:8080 {
+      redir https://{{ .Values.caddy.host }}{uri} permanent
+    }
+    https://{{ .Values.caddy.host }}:8443 {
+      reverse_proxy {{ include "faro.fullname" . }}:{{ .Values.service.port }}
+    }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "faro.fullname" . }}-caddy
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: {{ .Values.caddy.storageClass | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.caddy.storageSize }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "faro.fullname" . }}-caddy
+  labels:
+    {{- include "faro.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "faro.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: caddy
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ toJson .Values.caddy | sha256sum }}
+      labels:
+        {{- include "faro.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: caddy
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: caddy
+          image: {{ .Values.caddy.image }}
+          # The upstream binary has a file capability. Copying it without
+          # preserving metadata permits execution with all capabilities dropped.
+          command: [/bin/sh, -ec]
+          args:
+            - cp /usr/bin/caddy /tmp/caddy && exec /tmp/caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+          env:
+            - name: XDG_CONFIG_HOME
+              value: /data/config
+            - name: XDG_DATA_HOME
+              value: /data
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: https
+              containerPort: 8443
+          readinessProbe:
+            tcpSocket:
+              port: https
+          livenessProbe:
+            tcpSocket:
+              port: https
+            initialDelaySeconds: 15
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/caddy
+              readOnly: true
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "faro.fullname" . }}-caddy
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "faro.fullname" . }}-caddy
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "faro.fullname" . }}-public
+  annotations:
+    {{- toYaml .Values.caddy.serviceAnnotations | nindent 4 }}
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  selector:
+    {{- include "faro.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: caddy
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+    - name: https
+      port: 443
+      targetPort: https
+{{- end }}

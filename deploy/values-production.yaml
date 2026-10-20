@@ -3,7 +3,9 @@ fullnameOverride: faro
 env:
   PHX_SERVER: "true"
   PORT: "4000"
-  FARO_HOST: faro.faro.svc.cluster.local
+  FARO_HOST: faro.fyi
+  FARO_DATABASE_ENABLED: "true"
+  FARO_DATABASE_SSL: "true"
 
 imagePullSecrets:
   - name: ghcr-pull-secret
@@ -17,9 +19,33 @@ externalSecrets:
     kind: ClusterSecretStore
     # Immutable legacy alias used by the Pepicrft workload cluster.
     name: salibu-production
-  secretKeyBaseRemoteKey: faro/SECRET_KEY_BASE
   imagePullSecret:
     enabled: true
 
-# No public ingress, storage, database, or model credentials in this scaffold.
-# Register Faro in indie's analytics-projects.yaml before enabling analytics.
+analytics:
+  enabled: true
+
+caddy:
+  enabled: true
+  host: faro.fyi
+  storageClass: hcloud-volumes
+  serviceAnnotations:
+    external-dns.alpha.kubernetes.io/hostname: faro.fyi
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+    load-balancer.hetzner.cloud/location: fsn1
+    load-balancer.hetzner.cloud/uses-proxyprotocol: "false"
+
+postgres:
+  enabled: true
+  storageClass: hcloud-volumes
+  storageSize: 20Gi
+  nodeSelector:
+    node.cluster.x-k8s.io/pool: stateful
+  tolerations:
+    - key: node.cluster.x-k8s.io/pool
+      operator: Equal
+      value: stateful
+      effect: NoSchedule
+  backup:
+    enabled: true
+    bucketName: pepicrft-faro-postgres-backups

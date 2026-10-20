@@ -9,6 +9,7 @@ defmodule FaroWeb.Router do
   scope "/", FaroWeb do
     pipe_through :api
 
+    get "/", StatusController, :show
     get "/health/live", StatusController, :live
     get "/health/ready", StatusController, :ready
     get "/api/v1/status", StatusController, :show

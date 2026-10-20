@@ -12,7 +12,7 @@ not a working model/tool runtime.
 - `android/`: Kotlin and Android platform widgets, following Atlas native's setup.
 - `desktop/`: Rust/GPUI client for Linux and Windows; also buildable on macOS.
 - `server/`: independent Elixir/Phoenix Once workspace; see `server/AGENTS.md`.
-- `deploy/`: server Helm chart, production values, and staged indie registration.
+- `deploy/`: server Helm chart, production values, and deployment operations guide.
 - `once.toml`, `desktop/once.toml`: one explicit native Once workspace. Cargo manifests
   and the committed lockfile support dependency resolution, Clippy, and editors.
 
@@ -51,6 +51,7 @@ Device bundles are ad-hoc signed for compile validation, not installable preview
 Never commit or upload keystores, provisioning profiles, or private signing keys.
 Local caching is deliberate: no hosted project or repository secrets are required
 for builds. Server deployment is separate: it reads runtime secrets from External
-Secrets, and its Flux handoff under `deploy/indie` remains suspended/unregistered
-until an explicit first-deployment request. Do not edit sibling repositories or
-apply cluster resources as part of local validation.
+Secrets and uses `faro.fyi`, PostgreSQL, and Barman backups on the Pepicrft workload
+cluster. Live Flux registrations belong to `pepicrft/indie`; see `deploy/README.md`.
+Do not edit infrastructure repositories or apply cluster resources as part of local
+validation. Deployment still requires an explicit request.

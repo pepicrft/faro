@@ -18,7 +18,8 @@ trap cleanup EXIT
 cp -R "$release_dir" "$workdir/release"
 port="${FARO_SMOKE_PORT:-44973}"
 secret="$(openssl rand -hex 64)"
-PHX_SERVER=true FARO_SECRET_KEY_BASE="$secret" PORT="$port" \
+PHX_SERVER=true FARO_SECRET_KEY_BASE="$secret" \
+  FARO_DATABASE_ENABLED="${FARO_SMOKE_DATABASE_ENABLED:-false}" PORT="$port" \
   RELEASE_DISTRIBUTION=none "$workdir/release/bin/faro" start > "$workdir/server.log" 2>&1 &
 pid=$!
 

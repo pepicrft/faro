@@ -5,9 +5,9 @@ An open-source personal agent with a shared Rust core and native interfaces.
 This is the initial application and build scaffold, modeled after
 [`atlas-native` in tuist/tuist](https://github.com/tuist/tuist/tree/main/atlas-native).
 Every client displays metadata loaded from the same Rust core. There is no model
-provider, conversation runtime, tool execution, or persistence yet. A separate
-Phoenix server provides health/status endpoints; native clients are not connected
-to it yet.
+provider, conversation runtime, or tool execution yet. A separate Phoenix server
+provides health/status endpoints and a PostgreSQL foundation; native clients are
+not connected to it yet.
 
 ## Stack
 
@@ -84,13 +84,15 @@ mise run dev:server
 
 The local server listens on `127.0.0.1:4000`. It exposes `/health/live`,
 `/health/ready`, and `/api/v1/status`, which explicitly reports that the agent
-runtime is not configured. No database, auth, model connection, or native-client
-transport has been implemented.
+runtime is not configured. Production uses PostgreSQL; local development enables
+it only with `FARO_DATABASE_ENABLED=true` and `FARO_DATABASE_URL`. There are no
+application tables, accounts, model connections, or native-client transport yet.
 
 `mise run release:server` assembles a production release under
 `server/.once/out/mix_release/release`; `mise -C server run smoke` relocates it,
 starts it with an ephemeral key, and probes the real HTTP routes. Production
-requires a runtime `FARO_SECRET_KEY_BASE` of at least 64 bytes.
+requires a runtime `FARO_SECRET_KEY_BASE` of at least 64 bytes, a database URL,
+and its public certificate authority file for verified database TLS.
 
 The server has its own pinned toolchains and explicit Once targets. Its mise
 tasks fetch locked dependencies before graph loading. Direct Once commands run
@@ -103,11 +105,14 @@ on successful main-branch server checks. The Helm chart in `deploy/helm/faro`
 targets the Pepicrft workload cluster managed by `../indie`. Production values use
 its existing node pool and External Secrets store.
 
-Cluster-side Flux source, image automation, and a suspended HelmRelease are
-**staged under `deploy/indie/`, not registered in the sibling repository or applied
-to the cluster**. The service is internal-only until a public domain and auth are
-designed. See [the deployment guide](deploy/README.md) for required secrets,
-cluster registration, and first-rollout steps.
+The public endpoint is `https://faro.fyi`, with automatic HTTPS through Caddy.
+CloudNativePG provisions a dedicated PostgreSQL instance; the Barman plugin
+archives logs and takes daily backups to Hetzner object storage with 30-day
+retention. Flux registrations in `pepicrft/indie` track this repository's chart
+and automatically commit newly published image digests for deployment. See
+[the deployment guide](deploy/README.md) for secrets, bootstrap prerequisites,
+and operational checks. Public routes expose only health and service metadata,
+not personal-agent functionality.
 
 ## Products
 

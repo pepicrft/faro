@@ -5,12 +5,19 @@ defmodule FaroWeb.StatusTest do
 
   @endpoint FaroWeb.Endpoint
 
+  test "the public root reports the server's current capabilities" do
+    conn = get(build_conn(), "/")
+
+    assert %{"agent_runtime" => "not_configured", "service" => "server"} =
+             json_response(conn, 200)
+  end
+
   test "liveness responds without exposing configuration" do
     conn = get(build_conn(), "/health/live")
     assert json_response(conn, 200) == %{"status" => "ok"}
   end
 
-  test "readiness reports the dependency-free application as ready" do
+  test "readiness verifies the configured dependencies" do
     conn = get(build_conn(), "/health/ready")
     assert json_response(conn, 200) == %{"status" => "ok"}
   end

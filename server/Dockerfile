@@ -6,7 +6,7 @@ FROM hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSIO
 ARG TARGETARCH
 ARG ONCE_VERSION=0.68.2
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      build-essential ca-certificates curl git \
+      build-essential ca-certificates curl git libasound2t64 \
     && rm -rf /var/lib/apt/lists/*
 # Check the published archive against the hashes in the repository's mise.lock.
 RUN case "$TARGETARCH" in \

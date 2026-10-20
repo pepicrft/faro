@@ -4,10 +4,9 @@ defmodule Faro.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      {Phoenix.PubSub, name: Faro.PubSub},
-      FaroWeb.Endpoint
-    ]
+    database = if Application.get_env(:faro, :database_enabled, false), do: [Faro.Repo], else: []
+
+    children = database ++ [{Phoenix.PubSub, name: Faro.PubSub}, FaroWeb.Endpoint]
 
     Supervisor.start_link(children, strategy: :one_for_one, name: Faro.Supervisor)
   end
