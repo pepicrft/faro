@@ -42,6 +42,49 @@ checksum = "sha256:9612e13fc95f1af3f08058724b3d5d5502d046a1bfce3eeeab2efdd642c83
 url = "https://github.com/tuist/once/releases/download/0.68.2/once-0.68.2-x86_64-pc-windows-msvc.tar.gz"
 url_api = "https://api.github.com/repos/tuist/once/releases/assets/640673509"
 
+[[tools.infisical]]
+version = "0.43.104"
+backend = "github:Infisical/cli"
+specifiers = ["0.43.104"]
+
+[tools.infisical.options]
+asset_pattern = "cli_{{ version }}_{{ os(macos='darwin') }}_{{ arch(x64='amd64') }}.tar.gz"
+
+[tools.infisical."platforms.linux-arm64"]
+checksum = "sha256:9228ba9361208b6f90c9777d8458e4f1cde9c63edeb92cc889662fd6b3df58df"
+url = "https://github.com/Infisical/cli/releases/download/v0.43.104/cli_0.43.104_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/Infisical/cli/releases/assets/471377890"
+
+[tools.infisical."platforms.linux-arm64-musl"]
+checksum = "sha256:9228ba9361208b6f90c9777d8458e4f1cde9c63edeb92cc889662fd6b3df58df"
+url = "https://github.com/Infisical/cli/releases/download/v0.43.104/cli_0.43.104_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/Infisical/cli/releases/assets/471377890"
+
+[tools.infisical."platforms.linux-x64"]
+checksum = "sha256:cd0fef42f5c2371b8407c69c97c993978f8099bd58ec87590e5579359454082c"
+url = "https://github.com/Infisical/cli/releases/download/v0.43.104/cli_0.43.104_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/Infisical/cli/releases/assets/471377938"
+
+[tools.infisical."platforms.linux-x64-musl"]
+checksum = "sha256:cd0fef42f5c2371b8407c69c97c993978f8099bd58ec87590e5579359454082c"
+url = "https://github.com/Infisical/cli/releases/download/v0.43.104/cli_0.43.104_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/Infisical/cli/releases/assets/471377938"
+
+[tools.infisical."platforms.macos-arm64"]
+checksum = "sha256:a52cfc3e6fd0d9232cd15c0c5fe7dcdab915db6dcf62ef46320a4a9bfe45c3d1"
+url = "https://github.com/Infisical/cli/releases/download/v0.43.104/cli_0.43.104_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/Infisical/cli/releases/assets/471374012"
+
+[tools.infisical."platforms.macos-x64"]
+checksum = "sha256:2522c73cddbeb8106f0e9890e982c5a3f2fd7f7f6f126c2a4b6a8f793b2672fe"
+url = "https://github.com/Infisical/cli/releases/download/v0.43.104/cli_0.43.104_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/Infisical/cli/releases/assets/471374013"
+
+[tools.infisical."platforms.windows-x64"]
+checksum = "sha256:3813cde21d4b863ef083a3a7d9a7e3278f16ed0f2ac34d50dc3785a34e74b004"
+url = "https://github.com/Infisical/cli/releases/download/v0.43.104/cli_0.43.104_windows_amd64.tar.gz"
+url_api = "https://api.github.com/repos/Infisical/cli/releases/assets/471377490"
+
 [[tools.java]]
 version = "21.0.2"
 backend = "core:java"
