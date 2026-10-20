@@ -1,0 +1,77 @@
+name: Faro server
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server/**
+      - deploy/**
+      - mise.toml
+      - mise.lock
+      - .github/workflows/server.yml
+  pull_request:
+    paths:
+      - server/**
+      - deploy/**
+      - mise.toml
+      - mise.lock
+      - .github/workflows/server.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: faro-server-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  check:
+    name: Check server and chart
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v3
+        with:
+          working_directory: server
+          install_args: github:tuist/once erlang elixir helm
+      - run: mise run setup
+      - run: mise run check
+      - run: mise run smoke
+      - run: mise run check:helm
+
+  image:
+    name: Build server image
+    needs: check
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Authenticate for main-branch publication
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PUSH_TOKEN || github.token }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: server
+          file: server/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+          tags: |
+            ghcr.io/pepicrft/faro-server:main
+            ghcr.io/pepicrft/faro-server:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=https://github.com/pepicrft/faro
+          cache-from: type=gha,scope=faro-server
+          cache-to: type=gha,mode=max,scope=faro-server

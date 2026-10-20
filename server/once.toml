@@ -1,0 +1,100 @@
+# Independent server workspace: mobile builds do not require a BEAM toolchain.
+# Authored targets avoid Once 0.68.2's native resolver emitting an unmatched
+# optional deps/*/rebar.config.script source in workspace validation.
+[workspace]
+include = ["once.toml"]
+exclude = ["mix.exs"]
+
+[infrastructure.cache]
+provider = "local"
+
+[infrastructures.local]
+kind = "local"
+
+[[target]]
+name = "mix_dependencies_dev"
+kind = "mix_dependencies"
+srcs = ["mix.exs", "mix.lock", "config/**/*.exs", "deps/*/mix.exs", "deps/*/rebar.config"]
+[target.attrs]
+mix_env = "dev"
+target_prefix = "mix-dev"
+config = ["config/**/*.exs"]
+config_entry = "config/config.exs"
+
+[[target]]
+name = "mix_dependencies_test"
+kind = "mix_dependencies"
+srcs = ["mix.exs", "mix.lock", "config/**/*.exs", "deps/*/mix.exs", "deps/*/rebar.config"]
+[target.attrs]
+mix_env = "test"
+target_prefix = "mix-test"
+config = ["config/**/*.exs"]
+config_entry = "config/config.exs"
+
+[[target]]
+name = "mix_dependencies_prod"
+kind = "mix_dependencies"
+srcs = ["mix.exs", "mix.lock", "config/**/*.exs", "deps/*/mix.exs", "deps/*/rebar.config"]
+[target.attrs]
+mix_env = "prod"
+target_prefix = "mix-prod"
+config = ["config/**/*.exs"]
+config_entry = "config/config.exs"
+
+[[target]]
+name = "mix_application_dev"
+kind = "mix_project"
+srcs = ["lib/**/*.ex"]
+deps = ["./mix_dependencies_dev"]
+[target.attrs]
+app_name = "faro"
+mix_env = "dev"
+compile_args = ["--warnings-as-errors"]
+
+[[target]]
+name = "mix_application_test"
+kind = "mix_project"
+srcs = ["lib/**/*.ex"]
+deps = ["./mix_dependencies_test"]
+[target.attrs]
+app_name = "faro"
+mix_env = "test"
+compile_args = ["--warnings-as-errors"]
+
+[[target]]
+name = "mix_application_prod"
+kind = "mix_project"
+srcs = ["lib/**/*.ex"]
+deps = ["./mix_dependencies_prod"]
+[target.attrs]
+app_name = "faro"
+mix_env = "prod"
+compile_args = ["--warnings-as-errors"]
+
+[[target]]
+name = "mix_lint"
+kind = "mix_project"
+srcs = ["lib/**/*.ex", "test/**/*.exs", ".formatter.exs"]
+deps = ["./mix_dependencies_dev"]
+[target.attrs]
+app_name = "faro"
+mix_env = "dev"
+data = [".formatter.exs", "test/**/*.exs"]
+run_tasks = [["deps.unlock", "--check-unused"], ["format", "--check-formatted"]]
+run_cacheable = true
+
+[[target]]
+name = "mix_tests"
+kind = "elixir_test"
+srcs = ["test/**/*.exs"]
+deps = ["./mix_application_test"]
+[target.attrs]
+data = ["test/**/*.exs"]
+
+[[target]]
+name = "mix_release"
+kind = "mix_release"
+srcs = ["mix.exs"]
+deps = ["./mix_application_prod"]
+[target.attrs]
+release_name = "faro"

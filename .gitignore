@@ -1,0 +1,15 @@
+.DS_Store
+.once/
+/target/
+/desktop/target/
+/mise.local.toml
+*.keystore
+*.jks
+*.mobileprovision
+*.p12
+/server/_build/
+/server/deps/
+/server/erl_crash.dump
+/server/.elixir_ls/
+/server/mise.local.toml
+/deploy/dist/

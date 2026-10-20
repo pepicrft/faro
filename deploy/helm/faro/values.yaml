@@ -1,0 +1,51 @@
+fullnameOverride: ""
+replicaCount: 1
+
+image:
+  repository: ghcr.io/pepicrft/faro-server
+  tag: main
+  digest: ""
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+
+# Provision this separately; the chart never generates or embeds a production key.
+appSecretName: faro-app-env
+env:
+  PHX_SERVER: "true"
+  PORT: "4000"
+  FARO_HOST: localhost
+
+service:
+  port: 80
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 512Mi
+
+nodeSelector: {}
+tolerations: []
+
+externalSecrets:
+  enabled: false
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: default
+  secretKeyBaseRemoteKey: faro/SECRET_KEY_BASE
+  imagePullSecret:
+    enabled: false
+    name: ghcr-pull-secret
+    usernameRemoteKey: kubernetes/GHCR_PULL_USERNAME
+    passwordRemoteKey: kubernetes/GHCR_PULL_TOKEN
+
+# Enable after registering Faro in indie's analytics-projects.yaml. The scaffold
+# does not emit analytics events or capture personal-agent content.
+analytics:
+  enabled: false
+  secretName: analytics-client
+
+networkPolicy:
+  enabled: true

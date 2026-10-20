@@ -1,0 +1,7 @@
+.git
+.once
+_build
+deps
+.elixir_ls
+mise.local.toml
+erl_crash.dump

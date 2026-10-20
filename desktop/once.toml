@@ -1,0 +1,12 @@
+# GPUI uses Cargo's locked third-party graph; the core remains an authored target.
+[[target]]
+name = "FaroDesktop"
+kind = "rust_binary"
+srcs = ["src/**/*.rs"]
+deps = ["../FaroCore", "../FaroDesktopDependencies"]
+[target.attrs]
+crate_name = "faro_desktop"
+crate_root = "src/main.rs"
+cargo_package = "faro-desktop"
+edition = "2024"
+rustc_flags = ["-Dwarnings"]

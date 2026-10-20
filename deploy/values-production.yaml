@@ -1,0 +1,25 @@
+fullnameOverride: faro
+
+env:
+  PHX_SERVER: "true"
+  PORT: "4000"
+  FARO_HOST: faro.faro.svc.cluster.local
+
+imagePullSecrets:
+  - name: ghcr-pull-secret
+
+nodeSelector:
+  node.cluster.x-k8s.io/pool: app
+
+externalSecrets:
+  enabled: true
+  secretStoreRef:
+    kind: ClusterSecretStore
+    # Immutable legacy alias used by the Pepicrft workload cluster.
+    name: salibu-production
+  secretKeyBaseRemoteKey: faro/SECRET_KEY_BASE
+  imagePullSecret:
+    enabled: true
+
+# No public ingress, storage, database, or model credentials in this scaffold.
+# Register Faro in indie's analytics-projects.yaml before enabling analytics.

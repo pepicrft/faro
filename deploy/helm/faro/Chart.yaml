@@ -1,0 +1,6 @@
+apiVersion: v2
+name: faro
+description: Faro's Phoenix server for the Pepicrft workload cluster
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

@@ -1,0 +1,4 @@
+module FaroCoreFFI {
+    header "faro_core.h"
+    export *
+}

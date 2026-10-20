@@ -1,0 +1,12 @@
+[package]
+name = "faro-desktop"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+faro-core = { path = "../core" }
+gpui = "=0.2.2"

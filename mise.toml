@@ -1,0 +1,104 @@
+[tools]
+"github:tuist/once" = "0.68.2"
+rust = "1.96.0"
+java = "21.0.2"
+kotlin = "2.4.10"
+
+# SDK paths are supplied by the developer or CI, never hard-coded to a home dir.
+
+[tasks."build:server"]
+description = "Build the Elixir server in its independent Once workspace"
+run = "mise -C server run build"
+
+[tasks."check:server"]
+description = "Lint and test the Elixir server"
+run = "mise -C server run check"
+
+[tasks."release:server"]
+description = "Assemble the production Elixir release"
+run = "mise -C server run release"
+
+[tasks."dev:server"]
+description = "Run the Phoenix development server"
+run = "mise -C server run dev"
+
+[tasks."check:helm"]
+description = "Validate the server's Helm chart"
+run = "mise -C server run check:helm"
+
+[tasks."setup:android"]
+description = "Install Android SDK packages, the Rust target, and a local debug key"
+run = "bash scripts/setup-android.sh"
+
+[tasks."setup:apple"]
+description = "Install Rust targets for iOS simulator and device builds"
+run = "rustup target add aarch64-apple-ios-sim aarch64-apple-ios"
+
+[tasks.check]
+depends = ["prepare:rust"]
+description = "Validate the native graph, formatting, Clippy, and Rust tests"
+run = [
+  "once query validate-workspace",
+  "cargo fmt --all -- --check",
+  "cargo clippy --locked --all-targets -- -D warnings",
+  "once test FaroCoreTests",
+  "once test FaroCLITests",
+]
+
+[tasks.test]
+depends = ["prepare:rust"]
+description = "Test the Rust core, C/JNI boundaries, and CLI"
+run = ["once test FaroCoreTests", "once test FaroCLITests"]
+
+[tasks."build:cli"]
+depends = ["prepare:rust"]
+description = "Build the host Rust CLI"
+run = "once build FaroCLI"
+
+[tasks."build:macos"]
+depends = ["prepare:rust"]
+description = "Build the native SwiftUI macOS app"
+run = "once build FaroMac"
+
+[tasks."build:ios"]
+depends = ["prepare:rust"]
+description = "Build the arm64 iOS simulator app"
+run = "once build FaroIOS"
+
+[tasks."build:ios-device"]
+depends = ["prepare:rust"]
+description = "Compile an iOS device bundle (not provisioned for installation)"
+run = "once build FaroIOSDevice"
+
+[tasks."build:android"]
+depends = ["prepare:rust"]
+description = "Build the Kotlin arm64 Android debug APK"
+run = "once build FaroAndroid"
+
+[tasks."test:macos"]
+depends = ["prepare:rust"]
+description = "Test the Swift adapter against the real Rust library"
+run = "once test FaroMacTests"
+
+[tasks."test:ios"]
+depends = ["prepare:rust"]
+description = "Test the Swift adapter on an iOS simulator"
+run = "once test FaroIOSTests"
+
+[tasks."prepare:rust"]
+description = "Materialize locked third-party sources for Once 0.68.2"
+run = "cargo vendor --quiet --locked .once/vendor"
+
+[tasks."build:desktop"]
+description = "Build the GPUI desktop client using Once's per-crate graph"
+depends = ["prepare:rust"]
+run = "once build desktop/FaroDesktop"
+
+[tasks."check:desktop"]
+description = "Check the GPUI graph and Clippy"
+depends = ["prepare:rust"]
+run = [
+  "once query validate-workspace",
+  "cargo fmt --manifest-path desktop/Cargo.toml -- --check",
+  "cargo clippy --locked -p faro-desktop --all-targets -- -D warnings",
+]

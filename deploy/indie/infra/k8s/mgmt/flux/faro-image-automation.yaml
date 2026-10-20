@@ -1,0 +1,52 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: faro-server
+  namespace: flux-system
+spec:
+  image: ghcr.io/pepicrft/faro-server
+  interval: 1m0s
+  secretRef:
+    # Existing shared registry credential; retain its immutable legacy name.
+    name: ghcr-pepicrft-salibu
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: faro-server
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: faro-server
+  filterTags:
+    pattern: "^main$"
+  policy:
+    alphabetical:
+      order: asc
+  digestReflectionPolicy: Always
+  interval: 1m0s
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageUpdateAutomation
+metadata:
+  name: faro
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: pepicrft-infra
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        email: fluxcdbot@users.noreply.github.com
+        name: fluxcdbot
+      messageTemplate: "chore(faro): update production server image"
+    push:
+      branch: main
+  update:
+    path: ./infra/k8s/workload-apps/faro-production
+    strategy: Setters

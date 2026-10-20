@@ -1,0 +1,50 @@
+[tools]
+erlang = "29.0.2"
+elixir = "1.20.1-otp-29"
+helm = "3.21.3"
+
+[tasks.setup]
+description = "Install Hex and Rebar for dependency fetching"
+run = ["mix local.hex --force", "mix local.rebar --force"]
+
+[tasks.prepare]
+description = "Materialize the locked Elixir dependencies before Once graph loading"
+run = "mix deps.get --check-locked"
+
+[tasks.build]
+description = "Build the Phoenix application through Once"
+depends = ["prepare"]
+run = "once build mix_application_dev"
+
+[tasks.check]
+description = "Validate, lint, and test the Phoenix server through Once"
+depends = ["prepare"]
+run = ["once query validate-workspace", "once run mix_lint", "once test mix_tests"]
+
+[tasks.test]
+description = "Run the server tests through Once"
+depends = ["prepare"]
+run = "once test mix_tests"
+
+[tasks.release]
+description = "Assemble the production Elixir release through Once"
+depends = ["prepare"]
+run = "once build mix_release"
+
+[tasks.smoke]
+description = "Relocate and start the production release, then probe its HTTP routes"
+depends = ["release"]
+run = "bash scripts/smoke-release.sh"
+
+[tasks.dev]
+description = "Start the local Phoenix server"
+depends = ["prepare"]
+run = "once run mix_application_dev -- phx.server"
+
+[tasks."check:helm"]
+description = "Lint and render the Faro chart and production values"
+run = [
+  "helm lint ../deploy/helm/faro --strict",
+  "helm lint ../deploy/helm/faro --strict -f ../deploy/values-production.yaml",
+  "helm template faro ../deploy/helm/faro -f ../deploy/values-production.yaml",
+]

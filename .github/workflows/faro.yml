@@ -1,0 +1,108 @@
+name: Faro
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: faro-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust:
+    name: Rust (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15, windows-2025]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v3
+      - run: mise run check
+      - run: mise run build:cli
+      - uses: actions/upload-artifact@v4
+        with:
+          name: faro-cli-${{ matrix.os }}
+          path: .once/out/FaroCLI/faro*
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  apple:
+    name: SwiftUI macOS and iOS
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v3
+      - run: mise run setup:apple
+      - run: mise run build:macos
+      - run: mise run test:macos
+      - run: mise run build:ios
+      - run: mise run test:ios
+      - run: mise run build:ios-device
+      # ZIP preserves bundle structure, executable modes, and code signatures.
+      - name: Package application bundles
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent .once/out/FaroMac/Faro.app Faro-macOS.zip
+          ditto -c -k --sequesterRsrc --keepParent .once/out/FaroIOS/Faro.app Faro-iOS-simulator.zip
+          ditto -c -k --sequesterRsrc --keepParent .once/out/FaroIOSDevice/Faro.app Faro-iOS-device.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: faro-apple
+          path: Faro-*.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  android:
+    name: Kotlin Android
+    runs-on: ubuntu-24.04
+    env:
+      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/27.3.13750724
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v3
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - run: mise run setup:android
+      - run: mise run build:android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: faro-android-arm64
+          path: .once/out/FaroAndroid/FaroAndroid.apk
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  desktop:
+    name: GPUI (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15, windows-2025]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v3
+      - name: Install Linux native dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake pkg-config libasound2-dev libcap-ng-dev \
+            libfontconfig-dev libfreetype-dev libwayland-dev libxkbcommon-x11-dev \
+            libx11-xcb-dev libxcb1-dev libx11-dev libssl-dev libvulkan-dev libdbus-1-dev
+      - run: mise run check:desktop
+      - run: mise run build:desktop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: faro-gpui-${{ matrix.os }}
+          path: .once/out/desktop/FaroDesktop/faro_desktop*
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
