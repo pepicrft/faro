@@ -28,6 +28,7 @@ RUN mix deps.get --check-locked
 COPY once.toml .formatter.exs ./
 COPY config config
 COPY lib lib
+COPY priv priv
 COPY test test
 RUN once build mix_release
 

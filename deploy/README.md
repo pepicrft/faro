@@ -97,7 +97,7 @@ no manual digest editing. Image-pull and Git write credentials must remain valid
 ```sh
 KUBECONFIG="$HOME/.kube/pepicrft-mgmt.yaml" flux reconcile source git pepicrft-infra
 KUBECONFIG="$HOME/.kube/pepicrft-mgmt.yaml" flux get images all -A
-KUBECONFIG="$HOME/.kube/pepicrft-mgmt.yaml" flux get helmrelease faro-production -n org-salibu
+KUBECONFIG="$HOME/.kube/pepicrft-mgmt.yaml" flux get helmrelease faro -n org-salibu
 curl -fsS https://faro.fyi/health/ready
 ```
 
