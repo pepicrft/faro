@@ -46,8 +46,15 @@ on failure. Liveness must remain independent of PostgreSQL.
 
 ## Delivery
 
-`Dockerfile` builds the release through Once and ships only the release and
-runtime system libraries, running as an unprivileged user. Its Once checksums
+The server shares Tuist project `pedrotuist/faro` and the native workspace's
+Once authentication session. Use `ONCE_CACHE_PROVIDER=local` for offline builds.
+Trusted CI checks use short-lived OpenID Connect credentials when the repository
+variable `TUIST_CI_ENABLED=true`; never persist those credentials in build outputs.
+
+`Dockerfile` builds the release through Once with the local cache provider and
+ships only the release and runtime system libraries, running as an unprivileged
+user. The host CI check job supplies Tuist insights and shared release caching;
+BuildKit caches the separate multi-architecture image layers without credentials. Its Once checksums
 must stay aligned with the root toolchain pin when updating Once.
 
 `../deploy/helm/faro` defines the service at `https://faro.fyi`, using the shared

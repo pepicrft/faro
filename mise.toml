@@ -7,6 +7,10 @@ infisical = "0.43.104"
 
 # SDK paths are supplied by the developer or CI, never hard-coded to a home dir.
 
+[env]
+# Keep the signing key out of Once's declared/cacheable build outputs.
+ANDROID_DEBUG_KEYSTORE = "{{ config_root }}/.once/debug.keystore"
+
 [tasks."build:server"]
 description = "Build the Elixir server in its independent Once workspace"
 run = "mise -C server run build"

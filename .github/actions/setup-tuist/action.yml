@@ -1,0 +1,14 @@
+name: Authenticate Once with Tuist
+description: Exchange the GitHub Actions identity for a short-lived Tuist session
+inputs:
+  working-directory:
+    description: Directory containing the Once workspace configuration
+    default: .
+runs:
+  using: composite
+  steps:
+    - name: Authenticate with Tuist using OpenID Connect
+      if: env.ONCE_CACHE_PROVIDER == 'tuist'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: mise exec -- once auth login --provider tuist --no-browser

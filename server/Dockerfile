@@ -30,7 +30,9 @@ COPY config config
 COPY lib lib
 COPY priv priv
 COPY test test
-RUN once build mix_release
+# Host CI reports the checked release to Tuist. Keep this isolated multiarch
+# build credential-free; BuildKit caches its layers separately.
+RUN ONCE_CACHE_PROVIDER=local once build mix_release
 
 FROM debian:${DEBIAN_VERSION} AS runner
 LABEL org.opencontainers.image.source="https://github.com/pepicrft/faro"

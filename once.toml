@@ -4,9 +4,16 @@
 include = ["once.toml", "desktop/once.toml"]
 exclude = ["**/Cargo.toml"]
 
-# Local caching works on fresh clones and forks without an account or secrets.
+# Shared cache and build/test insights: https://tuist.dev/pedrotuist/faro
+# Use ONCE_CACHE_PROVIDER=local for offline work and untrusted CI runs.
 [infrastructure.cache]
-provider = "local"
+provider = "tuist"
+
+[infrastructures.tuist]
+kind = "tuist"
+url = "https://tuist.dev"
+account = "pedrotuist"
+project = "faro"
 
 [infrastructures.local]
 kind = "local"
@@ -187,4 +194,5 @@ version_code = 1
 version_name = "0.1.0"
 launch_activity = ".MainActivity"
 signing = "debug"
-debug_keystore = ".once/debug.keystore"
+# ANDROID_DEBUG_KEYSTORE points to a local key. A package-relative
+# debug_keystore would copy the private key into a cacheable build output.

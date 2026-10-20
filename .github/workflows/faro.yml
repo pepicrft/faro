@@ -8,6 +8,11 @@ on:
 
 permissions:
   contents: read
+  id-token: write
+
+env:
+  # Enable after linking the Tuist project to GitHub. Fork/Dependabot runs stay local.
+  ONCE_CACHE_PROVIDER: ${{ vars.TUIST_CI_ENABLED == 'true' && github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'tuist' || 'local' }}
 
 concurrency:
   group: faro-${{ github.workflow }}-${{ github.ref }}
@@ -24,6 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v3
+      - uses: ./.github/actions/setup-tuist
       - run: mise run check
       - run: mise run build:cli
       - uses: actions/upload-artifact@v4
@@ -40,6 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v3
+      - uses: ./.github/actions/setup-tuist
       - run: mise run setup:apple
       - run: mise run build:macos
       - run: mise run test:macos
@@ -67,6 +74,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v3
+      - uses: ./.github/actions/setup-tuist
       - uses: android-actions/setup-android@v3
         with:
           packages: platform-tools
@@ -90,6 +98,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v3
+      - uses: ./.github/actions/setup-tuist
       - name: Install Linux native dependencies
         if: runner.os == 'Linux'
         run: |

@@ -49,8 +49,14 @@ Android is arm64-v8a, API 26+, with SDK 35/build-tools 35.0.0/NDK 27.3.13750724.
 iOS targets Apple Silicon simulators and arm64 devices; macOS requires 14+.
 Device bundles are ad-hoc signed for compile validation, not installable previews.
 Never commit or upload keystores, provisioning profiles, or private signing keys.
-Local caching is deliberate: no hosted project or repository secrets are required
-for builds. Server deployment is separate: it reads runtime secrets from External
+Both Once workspaces share Tuist project `pedrotuist/faro` for caching and build/test
+insights. Authenticate with `mise exec -- once auth login --provider tuist`.
+`ONCE_CACHE_PROVIDER=local` is the offline/contributor escape hatch. CI uses OpenID
+Connect only when `TUIST_CI_ENABLED=true`; fork and Dependabot runs remain local.
+Do not add long-lived Tuist tokens to the repository or expose signing keys as
+cacheable outputs. Android signing must use the local `ANDROID_DEBUG_KEYSTORE`
+path rather than the `debug_keystore` target attribute, which copies the key.
+Server deployment is separate: it reads runtime secrets from External
 Secrets and uses `faro.fyi`, PostgreSQL, and Barman backups on the Pepicrft workload
 cluster. Live Flux registrations belong to `pepicrft/indie`; see `deploy/README.md`.
 Do not edit infrastructure repositories or apply cluster resources as part of local

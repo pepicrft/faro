@@ -5,8 +5,15 @@
 include = ["once.toml"]
 exclude = ["mix.exs"]
 
+# Share the native workspace's Tuist project and authentication session.
 [infrastructure.cache]
-provider = "local"
+provider = "tuist"
+
+[infrastructures.tuist]
+kind = "tuist"
+url = "https://tuist.dev"
+account = "pedrotuist"
+project = "faro"
 
 [infrastructures.local]
 kind = "local"

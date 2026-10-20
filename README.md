@@ -33,6 +33,7 @@ Install mise, then run from the repository root:
 
 ```sh
 mise install
+mise exec -- once auth login --provider tuist
 mise run check
 mise run build:cli
 .once/out/FaroCLI/faro
@@ -64,9 +65,29 @@ mise exec -- once build FaroCLI
 mise exec -- once build FaroCLI  # Unchanged compilation actions should hit the cache.
 ```
 
-Caching is **local by default**. No Tuist account, remote service, or secret is
-required. Hosted caching and release distribution can be configured later without
-changing the application architecture.
+Both Once workspaces use the shared cache and build/test insights in
+[**pedrotuist/faro**](https://tuist.dev/pedrotuist/faro). Sign in once with the
+command above; the native and server workspaces reuse the same local session.
+Once prints a live Tuist run link during builds and tests.
+
+For offline work or contributing without project access, keep everything local:
+
+```sh
+ONCE_CACHE_PROVIDER=local mise run check
+ONCE_CACHE_PROVIDER=local mise run check:server
+```
+
+GitHub Actions uses short-lived OpenID Connect credentials, not a stored Tuist
+token. Enable the repository variable `TUIST_CI_ENABLED=true` after installing the
+Tuist GitHub App and linking this project to `pepicrft/faro`. Native jobs and server
+checks then authenticate automatically. Fork pull requests and Dependabot runs
+always stay local. Leaving the variable unset also keeps CI local, allowing a safe
+initial rollout or temporary opt-out without changing the build graph.
+
+The isolated multi-architecture Docker build deliberately uses local Once caching
+and BuildKit layer caching, without copying Tuist credentials into images or build
+layers. Server compilation, tests, and release assembly already report to Tuist
+from the preceding CI check job.
 
 ## Elixir server
 
@@ -176,7 +197,9 @@ The setup task installs SDK 35, build-tools 35.0.0, NDK 27.3.13750724, platform
 tools, and the Rust Android target. The APK supports Android 8.0+ and packages
 `libfaro_core.so` for **arm64-v8a only**. Use an arm64 device or emulator.
 The standard public Android debug-key password is used; the generated keystore
-stays in ignored `.once/`. Production signing and Play Store bundles are separate
+stays in ignored `.once/`. Mise supplies `ANDROID_DEBUG_KEYSTORE` as a local path,
+so the key is never copied into a shared-cache build output. Production signing
+and Play Store bundles are separate
 future work. The setup script requires Bash, including on Windows.
 
 ### GPUI desktop
