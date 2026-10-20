@@ -30,6 +30,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/setup-tuist
+      - name: Install Rust check components
+        shell: bash
+        run: mise exec -- rustup component add --toolchain "$(mise current rust)" rustfmt clippy
       - run: mise run check
       - run: mise run build:cli
       - uses: actions/upload-artifact@v4
@@ -99,6 +102,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/setup-tuist
+      - name: Install Rust check components
+        shell: bash
+        run: mise exec -- rustup component add --toolchain "$(mise current rust)" rustfmt clippy
       - name: Install Linux native dependencies
         if: runner.os == 'Linux'
         run: |
