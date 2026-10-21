@@ -221,12 +221,13 @@ configured development shell. This produces a desktop executable, not an install
 The GPUI client currently contains only the welcome screen; it is not a chat
 editor or an accessibility-complete product.
 
-The lockfile intentionally keeps `libc` at 0.2.189 and `windows-capture` at 1.3.6
+The lockfile intentionally keeps `libc` at 0.2.189 and `windows-capture` at 1.4.4
 for GPUI 0.2.2's dependencies. Its archive dependency still uses `xattr` 0.2,
 which needs the Linux `ENOATTR` alias removed in `libc` 0.2.190. Its capture
-dependency expects the five-argument settings constructor from `windows-capture`
-1.3.6, not the newer API. Revisit these versions when upgrading GPUI and validate
-both Cargo checks and Once builds on Linux and Windows.
+dependency needs the `Context` and frame-buffer APIs from `windows-capture` 1.4,
+but also the five-argument settings constructor changed in 1.5. Revisit these
+versions when upgrading GPUI and validate both Cargo checks and Once builds on
+Linux and Windows.
 
 ## Tests and CI
 
