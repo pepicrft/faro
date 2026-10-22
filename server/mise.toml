@@ -36,10 +36,18 @@ description = "Relocate and start the production release, then probe its HTTP ro
 depends = ["release"]
 run = "bash scripts/smoke-release.sh"
 
+[tasks."db:migrate"]
+description = "Migrate the explicitly configured development database through Once"
+depends = ["prepare"]
+run = '''
+: "${FARO_DATABASE_URL:?Set FARO_DATABASE_URL to the development database first}"
+FARO_DATABASE_ENABLED=true once run mix_migrations
+'''
+
 [tasks.dev]
 description = "Start the local Phoenix server"
 depends = ["prepare"]
-run = "once run mix_application_dev -- phx.server"
+run = "once run mix_application_dev"
 
 [tasks."check:helm"]
 description = "Lint and render the Faro chart and production values"

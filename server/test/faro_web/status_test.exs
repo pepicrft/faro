@@ -5,6 +5,12 @@ defmodule FaroWeb.StatusTest do
 
   @endpoint FaroWeb.Endpoint
 
+  setup do
+    owner = Ecto.Adapters.SQL.Sandbox.start_owner!(Faro.Repo, shared: false)
+    on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(owner) end)
+    :ok
+  end
+
   test "the public root reports the server's current capabilities" do
     conn = get(build_conn(), "/")
 

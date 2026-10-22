@@ -50,6 +50,7 @@ jobs:
     env:
       FARO_DATABASE_ENABLED: "true"
       FARO_DATABASE_URL: postgres://faro:faro-ci-only@localhost:5432/faro_test
+      FARO_TEST_DATABASE_URL: postgres://faro:faro-ci-only@localhost:5432/faro_test
       FARO_DATABASE_SSL: "false"
       FARO_SMOKE_DATABASE_ENABLED: "true"
     defaults:

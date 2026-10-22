@@ -1,8 +1,8 @@
 # Faro
 
 Faro is an open-source personal agent. This repository currently contains native
-client scaffolds, shared metadata, and a Phoenix server with health/status routes,
-not a working model/tool runtime.
+client scaffolds, shared metadata, and a Phoenix server with health/status and
+authentication routes, not a working model/tool runtime.
 
 ## Architecture
 
@@ -15,6 +15,12 @@ not a working model/tool runtime.
 - `deploy/`: server Helm chart, production values, and deployment operations guide.
 - `once.toml`, `desktop/once.toml`: one explicit native Once workspace. Cargo manifests
   and the committed lockfile support dependency resolution, Clippy, and editors.
+
+Design the native apps to maximize concurrent compilation. Prefer a horizontal
+architecture of independent feature modules with loose dependencies and narrow,
+stable interfaces. Features should depend on small shared contracts, not on other
+features or a growing shared implementation module. Keep composition in the app
+entry point and avoid long dependency chains that serialize the build graph.
 
 ## Development
 

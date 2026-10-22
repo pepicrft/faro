@@ -58,6 +58,9 @@ app_name = "faro"
 mix_env = "dev"
 priv = ["priv/**/*"]
 compile_args = ["--warnings-as-errors"]
+# Authored task runners register Once's locked-source SCM instead of requiring
+# Hex inside the isolated runtime home used by the generic Mix command runner.
+run_tasks = [["phx.server", "--no-compile", "--no-deps-check"]]
 
 [[target]]
 name = "mix_application_test"
@@ -94,12 +97,29 @@ run_tasks = [["deps.unlock", "--check-unused"], ["format", "--check-formatted"]]
 run_cacheable = true
 
 [[target]]
+name = "mix_migrations"
+kind = "mix_project"
+srcs = ["lib/**/*.ex"]
+deps = ["./mix_dependencies_dev"]
+[target.attrs]
+app_name = "faro"
+mix_env = "dev"
+priv = ["priv/**/*"]
+compile_args = ["--warnings-as-errors"]
+run_tasks = [["ecto.migrate", "--no-compile", "--no-deps-check"]]
+# Database mutations must run every time, with runtime-only inherited credentials.
+run_cacheable = false
+
+[[target]]
 name = "mix_tests"
 kind = "elixir_test"
 srcs = ["test/**/*.exs"]
 deps = ["./mix_application_test"]
 [target.attrs]
 data = ["test/**/*.exs"]
+# Inherit only a disposable test-database URL, never production credentials.
+env_inherit = ["FARO_TEST_DATABASE_URL"]
+env = { FARO_DATABASE_SSL = "false" }
 
 [[target]]
 name = "mix_release"

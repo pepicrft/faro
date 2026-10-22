@@ -6,8 +6,9 @@ This is the initial application and build scaffold, modeled after
 [`atlas-native` in tuist/tuist](https://github.com/tuist/tuist/tree/main/atlas-native).
 Every client displays metadata loaded from the same Rust core. There is no model
 provider, conversation runtime, or tool execution yet. A separate Phoenix server
-provides health/status endpoints and a PostgreSQL foundation; native clients are
-not connected to it yet.
+provides health/status endpoints and PostgreSQL-backed OAuth/OpenID Connect
+authentication with Boruta and dynamic client registration. Native clients are
+not connected to it yet; see [the authentication flow](server/AUTHENTICATION.md).
 
 ## Stack
 
@@ -98,6 +99,9 @@ Install the server tools and Hex/Rebar, then use the root convenience tasks:
 ```sh
 mise -C server install github:tuist/once erlang elixir helm
 mise -C server run setup
+# With a disposable local PostgreSQL database and your local role:
+createdb faro_test
+export FARO_TEST_DATABASE_URL="postgres://$(whoami)@localhost:5432/faro_test"
 mise run check:server
 mise run build:server
 mise run dev:server
@@ -106,8 +110,14 @@ mise run dev:server
 The local server listens on `127.0.0.1:4000`. It exposes `/health/live`,
 `/health/ready`, and `/api/v1/status`, which explicitly reports that the agent
 runtime is not configured. Production uses PostgreSQL; local development enables
-it only with `FARO_DATABASE_ENABLED=true` and `FARO_DATABASE_URL`. There are no
-application tables, accounts, model connections, or native-client transport yet.
+it only with `FARO_DATABASE_ENABLED=true` and `FARO_DATABASE_URL`. Authentication
+uses local accounts, browser consent, mandatory S256 PKCE, rotating refresh tokens,
+and revocation. Tests require a separate disposable PostgreSQL database through
+`FARO_TEST_DATABASE_URL`; they never silently skip database coverage. There are
+still no model connections or native-client transport. See
+[`server/AUTHENTICATION.md`](server/AUTHENTICATION.md) for setup, endpoint details,
+client integration, security boundaries, and the current lack of email verification
+and password recovery.
 
 `mise run release:server` assembles a production release under
 `server/.once/out/mix_release/release`; `mise -C server run smoke` relocates it,
